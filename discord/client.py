@@ -269,15 +269,16 @@ class Client:
         else:
             object.__setattr__(self, name, value)
 
+    @staticmethod
     @asyncio.coroutine
-    def _run_event(self, event, *args, **kwargs):
+    def _run_event(discord, event, *args, **kwargs):
         try:
-            yield from getattr(self, event)(*args, **kwargs)
+            yield from getattr(discord, event)(*args, **kwargs)
         except asyncio.CancelledError:
             pass
         except Exception:
             try:
-                yield from self.on_error(event, *args, **kwargs)
+                yield from discord.on_error(event, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
@@ -290,7 +291,7 @@ class Client:
             getattr(self, handler)(*args, **kwargs)
 
         if hasattr(self, method):
-            compat.create_task(self._run_event(method, *args, **kwargs), loop=self.loop)
+            compat.create_task(self._run_event(self, method, *args, **kwargs), loop=self.loop)
 
     @asyncio.coroutine
     def on_error(self, event_method, *args, **kwargs):
